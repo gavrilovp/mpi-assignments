@@ -1,4 +1,4 @@
-labs := lab1
+labs := lab1 lab2
 common_objs := utils.o
 
 rootdir ?= $(shell pwd)
