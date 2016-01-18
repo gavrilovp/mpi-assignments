@@ -36,9 +36,17 @@ $(foreach lab, $(labs), \
 %.o: %.c
 	mpicc -std=c99 -I $(rootdir) -c $< -o $@
 
+lab5-linear : lab5/main.c
+	cc -std=c99 $< -o $@
+
+lab5-mpi : lab5/main.c
+	cc -std=c99 -DUSE_MPI -c $< -o $@
+
 clean:
 	find -name \*.o -delete
 	rm -rf $(foreach lab,$(labs),$(lab)/$(lab) $(lab)/$(lab).job)
+	rm -rf lab5-linear
+	rm -rf lab5-mpi
 
 cleaninstall:
 	rm -rf $(foreach lab,$(labs),$(installdir)/$(lab) $(installdir)/$(lab).*.{stdout,stderr})
