@@ -37,7 +37,7 @@ $(foreach lab, $(labs), \
 	mpicc -std=c99 -I $(rootdir) -c $< -o $@
 
 lab5-linear : lab5/main.c
-	cc -std=c99 $< -o $@
+	gcc -std=c99 $< -o $@
 
 lab5-mpi : lab5/main.c
 	cc -std=c99 -DUSE_MPI -c $< -o $@

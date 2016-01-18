@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #ifdef USE_MPI
 #include <mpi.h>
@@ -8,13 +9,16 @@ typedef int bool;
 #define true 1
 #define false 0
 
-#define VERTEX_COUNT 5
+typedef struct {
+  size_t vertex_count;
+  int** matrix;
+} AdjacencyMatrix;
 
 int add_vertex_to_clique(int* clique, int* clique_size,
-                         int adj_matrix[VERTEX_COUNT][VERTEX_COUNT], int v_i) {
+                         AdjacencyMatrix* adj_matrix, int v_i) {
   int clique_vertex_i = 0;
   for (clique_vertex_i; clique_vertex_i < *clique_size; clique_vertex_i++) {
-    if (!adj_matrix[clique_vertex_i, v_i]) {
+    if (!(*adj_matrix).matrix[clique_vertex_i, v_i]) {
       return -1;  
     }
   }
@@ -32,22 +36,21 @@ bool belongs_clique(int v_i, int* clique, int* clique_size) {
 }
 
 bool is_adjoinable_vertex(int* clique, int* clique_size,
-                          int v_i, int adj_matrix[VERTEX_COUNT][VERTEX_COUNT]) {
+                          int v_i, AdjacencyMatrix* adj_matrix) {
   for (int i=0; i<*clique_size; i++) {
-    if (!adj_matrix[clique[i]][v_i]) {
+    if (!(*adj_matrix).matrix[clique[i]][v_i]) {
       return false;
     }
   }
   return true;
 }
 
-void procedure_1(int* clique, int* clique_size,
-                 int adj_matrix[VERTEX_COUNT][VERTEX_COUNT]) {
+void procedure_1(int* clique, int* clique_size, AdjacencyMatrix* adj_matrix) {
   int max_rho = 0;
   int* max_clique = clique;
   int* max_clique_size = clique_size;
   
-  for (int i=0; i<VERTEX_COUNT; i++) {
+  for (int i=0; i<(*adj_matrix).vertex_count; i++) {
     if (!belongs_clique(i, clique, clique_size) &&
         is_adjoinable_vertex(clique, clique_size, i, adj_matrix)) {
       // Obtain new clique with adjoinable vertex.
@@ -57,7 +60,7 @@ void procedure_1(int* clique, int* clique_size,
       tmp_clique[tmp_clique_size-1] = i;
 
       int current_rho = 0;
-      for (int j=0; j<VERTEX_COUNT; j++) {
+      for (int j=0; j<(*adj_matrix).vertex_count; j++) {
         if (!belongs_clique(j, clique, clique_size) &&
             is_adjoinable_vertex(clique,clique_size, j, adj_matrix)) {
           current_rho++;
@@ -78,31 +81,44 @@ void procedure_1(int* clique, int* clique_size,
 int main(int argc, char** argv) {
   #ifdef USE_MPI
   MPI_Init(&argc, &argv);
+
+  int nprocs;
+  mpi_check(MPI_Comm_size(MPI_COMM_WORLD, &nprocs));
+  int pid;
+  mpi_check(MPI_Comm_rank(MPI_COMM_WORLD, &pid));
   #endif
 
-  int adjacency_matrix[VERTEX_COUNT][VERTEX_COUNT] = {
-    {0, 1, 0, 0, 0},
-    {1, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0}
-  };
+  FILE *f = fopen("adjacency_matrix.txt", "r");
+  if (f == NULL) {
+    perror("fopen");
+    exit(EXIT_FAILURE);
+  }
+  AdjacencyMatrix adj_matrix;
+  fscanf(f, "%zu", &adj_matrix.vertex_count);
+  adj_matrix.matrix = malloc(adj_matrix.vertex_count * sizeof(int*));
 
-  int clique[VERTEX_COUNT];
+  for (int i=0; i<adj_matrix.vertex_count; i++) {
+    adj_matrix.matrix[i] = malloc(adj_matrix.vertex_count * sizeof(int));
+    for (int j=0; j<adj_matrix.vertex_count; j++) {
+      fscanf(f, "%d", &adj_matrix.matrix[i][j]);
+    }
+  }
+
+  int clique[adj_matrix.vertex_count];
   int clique_size = 0;
 
-  int max_clique[VERTEX_COUNT];
+  int max_clique[adj_matrix.vertex_count];
   int max_clique_size = 0;
 
-  for (int i = 0; i < VERTEX_COUNT; i++) {
+  for (int i = 0; i < adj_matrix.vertex_count; i++) {
     clique[0] = i;
     clique_size = 1;
 
-    procedure_1(clique, &clique_size, adjacency_matrix);
+    procedure_1(clique, &clique_size, &adj_matrix);
 
     if (clique_size > max_clique_size) {
       max_clique_size = clique_size;
-      memcpy(max_clique, clique, sizeof(int) * VERTEX_COUNT);
+      memcpy(max_clique, clique, sizeof(int) * adj_matrix.vertex_count);
     }
   }
 
