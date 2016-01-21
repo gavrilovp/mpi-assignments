@@ -1,4 +1,4 @@
-labs := lab1 lab2 lab3 lab4
+labs := lab1 lab2 lab3 lab4 lab5
 common_objs := utils.o
 
 rootdir ?= $(shell pwd)
@@ -36,11 +36,14 @@ $(foreach lab, $(labs), \
 %.o: %.c
 	mpicc -std=c99 -I $(rootdir) -c $< -o $@
 
-lab5-linear : lab5/main.c
-	gcc -std=c99 $< -o $@
+clique-linear : clique/main.c
+	gcc -std=c99 -DLINEAR $< -o $@
 
-lab5-mpi : lab5/main.c
-	cc -std=c99 -DUSE_MPI -c $< -o $@
+clique-mpi : clique/main.c
+	cc -std=c99 -DMPI -c $< -o $@
+
+clique-openmp: clique/main.c
+	cc -std=c99 -DOPENMP $< -o $@ -fopenmp
 
 clean:
 	find -name \*.o -delete
