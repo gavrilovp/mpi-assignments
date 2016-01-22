@@ -1,5 +1,6 @@
-MPICC ?= mpicc
-CFLAGS = -Wall -std=c99 -g -DMPI
+MPICC ?= mpicc-TV
+CFLAGS = -Wall -std=c99 -g -DMPI -DMPI_PCONTROL
+LDFLAGS = 
 
 labs := lab1 lab2 lab3 lab4 lab5 clique
 common_objs := utils.o
@@ -40,7 +41,7 @@ $(foreach lab, $(labs), \
 	$(MPICC) $(CFLAGS) -I $(rootdir) -c $< -o $@
 
 clique-linear : clique/main.c
-	$(MPICC) $(CFLAGS) -DLINEAR -I $(rootdir) $< -o $@
+	$(MPICC) -Wall -std=c99 -g $(LDFLAGS) -DLINEAR -I $(rootdir) $< -o $@
 
 clique-openmp: clique/main.c
 	cc -std=c99 -DOPENMP $< -o $@ -fopenmp
