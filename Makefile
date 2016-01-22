@@ -17,7 +17,7 @@ $(eval include $(1)/build.mk)
 $(eval $(1)_nodes ?= $(nodes))
 
 $(1)/$(1): $(foreach obj,$($(1)_objs),$(1)/$(obj)) $(common_objs)
-	mpicc $$^ -o $$@
+	$(MPICC) $(CFLAGS) $(LDFLAGS) $$^ -o $$@
 
 # Sets installdir in the job file, among other things
 $(1)/$(1).job: lab.job.in

@@ -157,14 +157,14 @@ int main(int argc, char** argv) {
   // Set a sane error handler (return errors and don't kill our process)
   mpi_check(MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN));
 
-/* #ifdef MPI_PCONTROL */
+#ifdef MPI_PCONTROL
   // Set trace parameters
   MPI_Pcontrol(TRACELEVEL, 1, 1, 1);
   MPI_Pcontrol(TRACEFILES, "clique.trace.tmp", "clique.trace", 0);
   MPI_Pcontrol(TRACESTATISTICS, 200, 1, 1, 1, 1, 1);
   // Start trace
   MPI_Pcontrol(TRACENODE, 1024 * 1024, 1, 1);
-/* #endif */
+#endif
 
   MPI_Datatype mpi_clique_type;
   {
