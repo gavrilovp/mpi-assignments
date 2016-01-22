@@ -1,4 +1,7 @@
-labs := lab1 lab2 lab3 lab4 lab5
+MPICC ?= mpicc
+CFLAGS = -Wall -std=c99 -g -DMPI
+
+labs := lab1 lab2 lab3 lab4 lab5 clique
 common_objs := utils.o
 
 rootdir ?= $(shell pwd)
@@ -34,13 +37,10 @@ $(foreach lab, $(labs), \
 )
 
 %.o: %.c
-	mpicc -std=c99 -I $(rootdir) -c $< -o $@
+	$(MPICC) $(CFLAGS) -I $(rootdir) -c $< -o $@
 
 clique-linear : clique/main.c
-	gcc -std=c99 -DLINEAR $< -o $@
-
-clique-mpi : clique/main.c
-	cc -std=c99 -DMPI -c $< -o $@
+	$(MPICC) $(CFLAGS) -DLINEAR -I $(rootdir) $< -o $@
 
 clique-openmp: clique/main.c
 	cc -std=c99 -DOPENMP $< -o $@ -fopenmp
